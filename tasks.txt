@@ -1,0 +1,19 @@
+Tasks
+
+-----
+Jim
+* Mesos
+* CloudFoundry
+* Warden
+* Bosh
+* Docker - Docker-compose way to run multiple containers
+* Docker - Explain how containers interact with operating systems
+
+-----
+Patrick
+* Amazon Elastic Beanstalk
+* Kubernetes
+* Flynn or Deis
+* OpenStack
+* Docker - Basic understanding of Dockerfile
+* Docker - Vagrant way to run multiple containers
