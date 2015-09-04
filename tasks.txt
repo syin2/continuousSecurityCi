@@ -12,7 +12,7 @@ Jim
 -----
 Patrick
 * Amazon Elastic Beanstalk
-* Kubernetes
+* Kubernetes (kuber net ies)
 * Flynn or Deis
 * OpenStack
 * Docker - Basic understanding of Dockerfile
