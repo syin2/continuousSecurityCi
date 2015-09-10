@@ -1,2 +1,3 @@
 .vagrant
 *.swp
+ci/secrets.yml
