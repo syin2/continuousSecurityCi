@@ -14,4 +14,11 @@ aws_subnet_id = get_secret("aws_subnet_id")
 
 box_name = ARGV[0] || "ec2box"
 
-`docker-machine create --driver amazonec2 --amazonec2-access-key #{aws_access_key} --amazonec2-secret-key #{aws_secret_key} --amazonec2-vpc-id #{aws_vpc_id} --amazonec2-subnet-id #{aws_subnet_id} --amazonec2-region us-east-1 --amazonec2-zone a --amazonec2-instance-type t2.medium #{box_name}`
+command = "docker-machine create --driver amazonec2 --amazonec2-access-key #{aws_access_key} --amazonec2-secret-key #{aws_secret_key} --amazonec2-vpc-id #{aws_vpc_id} --amazonec2-subnet-id #{aws_subnet_id} --amazonec2-region us-east-1 --amazonec2-zone a --amazonec2-instance-type t2.medium #{box_name}"
+
+puts command
+IO.popen(command) do |io|
+  while (line = io.gets) do
+    puts line
+  end
+end
