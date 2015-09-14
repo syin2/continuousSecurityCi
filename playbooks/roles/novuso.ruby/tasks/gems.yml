@@ -1,0 +1,14 @@
+---
+- name: "ruby gems"
+  gem:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    user_install: "{{ item.user_install | default('no') }}"
+    version: "{{ item.version | default(omit) }}"
+    executable: "{{ item.executable | default(ruby_gem_exec) }}"
+    gem_source: "{{ item.gem_source | default(omit) }}"
+    repository: "{{ item.repository | default(omit) }}"
+    pre_release: "{{ item.pre_release | default(omit) }}"
+    include_dependencies: "{{ item.include_deps | default('yes') }}"
+  with_items: ruby_gems
+  when: item.name is defined

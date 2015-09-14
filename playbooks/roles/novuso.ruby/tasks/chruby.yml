@@ -1,0 +1,46 @@
+---
+- name: "check for chruby install"
+  stat:
+    path: "{{ ruby_install_dir }}/.chruby-{{ ruby_chruby_version }}-installed"
+  register: _chruby_installed
+
+- name: "chruby directory"
+  file:
+    dest: "{{ ruby_install_dir }}"
+    state: directory
+
+- name: "download chruby"
+  get_url:
+    url: "{{ ruby_chruby_archive_url }}"
+    dest: "{{ ruby_chruby_download_tar }}"
+  when: _chruby_installed.stat.exists == false
+
+- name: "chruby archive unpacked"
+  unarchive:
+    copy: no
+    src: "{{ ruby_chruby_download_tar }}"
+    dest: "{{ ruby_install_dir }}"
+  when: _chruby_installed.stat.exists == false
+
+- name: "chruby installed"
+  sudo: yes
+  shell: "make install"
+  args:
+    chdir: "{{ ruby_install_dir }}/chruby-{{ ruby_chruby_version }}"
+    creates: "{{ ruby_install_dir }}/.chruby-{{ ruby_chruby_version }}-installed"
+
+- name: "mark chruby"
+  file:
+    dest: "{{ ruby_install_dir }}/.chruby-{{ ruby_chruby_version }}-installed"
+    state: touch
+  changed_when: false
+
+- name: "chruby.sh in .bashrc"
+  lineinfile:
+    dest: "~/.bashrc"
+    line: "source /usr/local/share/chruby/chruby.sh"
+
+- name: "auto.sh in .bashrc"
+  lineinfile:
+    dest: "~/.bashrc"
+    line: "source /usr/local/share/chruby/auto.sh"

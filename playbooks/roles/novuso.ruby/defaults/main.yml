@@ -1,0 +1,23 @@
+---
+ruby_version: "2.2.2"
+ruby_install_version: "0.5.0"
+ruby_chruby_version: "0.3.9"
+ruby_dir: "/home/{{ ansible_user_id }}/.rubies/ruby-{{ ruby_version }}"
+ruby_bin_dir: "{{ ruby_dir }}/bin"
+ruby_gem_exec: "{{ ruby_bin_dir }}/gem"
+ruby_install_dir: "/home/{{ ansible_user_id }}/.ruby"
+ruby_install_archive_url: "https://github.com/postmodern/ruby-install/archive/v{{ ruby_install_version }}.tar.gz"
+ruby_chruby_archive_url: "https://github.com/postmodern/chruby/archive/v{{ ruby_chruby_version }}.tar.gz"
+ruby_install_download_tar: "{{ ruby_install_dir }}/ruby-install-{{ ruby_install_version }}.tar.gz"
+ruby_chruby_download_tar: "{{ ruby_install_dir }}/chruby-{{ ruby_chruby_version }}.tar.gz"
+# ruby_gems
+# - name: compass            #required
+#   state: present           #default
+#   user_install: no         #default
+#   version: "0.1.0"         #omitted
+#   executable: /path/to/bin #default
+#   gem_source: /path/source #omitted
+#   repository: repo         #omitted
+#   pre_release: no          #omitted
+#   include_deps: yes        #default
+ruby_gems: []

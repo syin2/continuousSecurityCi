@@ -1,0 +1,36 @@
+---
+- name: "check for ruby-install install"
+  stat:
+    path: "{{ ruby_install_dir }}/.ruby-install-{{ ruby_install_version }}-installed"
+  register: _ruby_install_installed
+
+- name: "ruby-install directory"
+  file:
+    dest: "{{ ruby_install_dir }}"
+    state: directory
+
+- name: "download ruby-install"
+  get_url:
+    url: "{{ ruby_install_archive_url }}"
+    dest: "{{ ruby_install_download_tar }}"
+  when: _ruby_install_installed.stat.exists == false
+
+- name: "ruby-install archive unpacked"
+  unarchive:
+    copy: no
+    src: "{{ ruby_install_download_tar }}"
+    dest: "{{ ruby_install_dir }}"
+  when: _ruby_install_installed.stat.exists == false
+
+- name: "ruby-install installed"
+  sudo: yes
+  shell: "make install"
+  args:
+    chdir: "{{ ruby_install_dir }}/ruby-install-{{ ruby_install_version }}"
+    creates: "{{ ruby_install_dir }}/.ruby-install-{{ ruby_install_version }}-installed"
+
+- name: "mark ruby-install"
+  file:
+    dest: "{{ ruby_install_dir }}/.ruby-install-{{ ruby_install_version }}-installed"
+    state: touch
+  changed_when: false
