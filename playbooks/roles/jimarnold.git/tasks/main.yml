@@ -1,0 +1,2 @@
+- name: Latest version of git is installed
+  apt: pkg=git state=latest
