@@ -2,11 +2,11 @@
 # vi: set ft=ruby :
 require 'yaml'
 
+SECRETS = YAML.load_file(File.expand_path(File.join(File.dirname(__FILE__), "./secrets.yml")))
+
 def get_secret(key)
   SECRETS.has_key?(key) ? SECRETS[key] : raise("Your secrets file is missing your #{key}")
 end
-
-SECRETS = YAML.load_file(File.expand_path(File.join(File.dirname(__FILE__), "./secrets.yml")))
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
@@ -37,9 +37,15 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "ansible" do |ansible|
     ansible.sudo = true
-    ansible.playbook = "playbooks/playbook.yml"
+    ansible.limit = 'all'
+    ansible.playbook = "playbooks/sudo.yml"
     ansible.extra_vars = {
       GOCD_ADMIN_EMAIL: 'jim@thoughtworks.com'
     }
+  end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.limit = 'all'
+    ansible.playbook = "playbooks/sudoless.yml"
   end
 end
