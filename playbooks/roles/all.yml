@@ -1,0 +1,11 @@
+---
+- hosts: all
+  sudo: yes
+  roles:
+  - tpbrown.gocd
+  - configure_gocd
+
+- hosts: all
+  sudo: no
+  roles:
+  - novuso.ruby

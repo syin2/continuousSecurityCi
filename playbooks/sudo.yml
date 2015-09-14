@@ -1,5 +1,0 @@
----
-- hosts: all
-  roles:
-  - tpbrown.gocd
-  - configure_gocd
