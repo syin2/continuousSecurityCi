@@ -8,6 +8,8 @@ def get_secret(key)
   SECRETS.has_key?(key) ? SECRETS[key] : raise("Your secrets file is missing your #{key}")
 end
 
+BOX_NAME = ENV["BOX_NAME"] || "default"
+
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.network "forwarded_port", guest: 8153, host: 8153
@@ -35,17 +37,19 @@ Vagrant.configure(2) do |config|
     override.nfs.functional = false
   end
 
-  config.vm.provision "ansible" do |ansible|
-    ansible.sudo = true
-    ansible.limit = 'all'
-    ansible.playbook = "playbooks/sudo.yml"
-    ansible.extra_vars = {
-      GOCD_ADMIN_EMAIL: 'jim@thoughtworks.com'
-    }
-  end
+  config.vm.define BOX_NAME do |box|
+    box.vm.provision "ansible" do |ansible|
+      ansible.sudo = true
+      ansible.limit = 'all'
+      ansible.playbook = "playbooks/sudo.yml"
+      ansible.extra_vars = {
+        GOCD_ADMIN_EMAIL: 'jim@thoughtworks.com'
+      }
+    end
 
-  config.vm.provision "ansible" do |ansible|
-    ansible.limit = 'all'
-    ansible.playbook = "playbooks/sudoless.yml"
+    box.vm.provision "ansible" do |ansible|
+      ansible.limit = 'all'
+      ansible.playbook = "playbooks/sudoless.yml"
+    end
   end
 end
