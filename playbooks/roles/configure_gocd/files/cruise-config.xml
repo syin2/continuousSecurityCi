@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="75">
+  <server artifactsdir="artifacts" agentAutoRegisterKey="123456789abcdef" commandRepositoryLocation="default" serverId="13b05371-77fd-41a8-a9e4-6381123f5f7b" />
+  <pipelines group="pretend">
+    <pipeline name="pretend_catalog_service">
+      <materials>
+        <git url="https://github.com/ThoughtWorks-AELab/pretend_catalog_service" />
+      </materials>
+      <stage name="DeployStaging">
+        <jobs>
+          <job name="Deploy">
+            <tasks>
+              <rake />
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <agents>
+  </agents>
+</cruise>

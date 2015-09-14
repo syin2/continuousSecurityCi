@@ -1,0 +1,3 @@
+---
+- name: put cruise-config in the correct place
+  copy: src=cruise-config.xml dest=/etc/go/cruise-config.xml owner=go group=go mode=0644
