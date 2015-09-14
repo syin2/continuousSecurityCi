@@ -1,5 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'yaml'
 
 def get_secret(key)
   SECRETS.has_key?(key) ? SECRETS[key] : raise("Your secrets file is missing your #{key}")
