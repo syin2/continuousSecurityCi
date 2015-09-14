@@ -7,5 +7,8 @@
 
 - hosts: all
   sudo: no
+  vars:
+  - ruby_gems:
+    - name: "bundler"
   roles:
   - novuso.ruby
