@@ -1,0 +1,7 @@
+- name: Download cf package
+  get_url: 
+    url="{{ CF_PACKAGE_URL }}"
+    dest="{{ CF_PACKAGE_DEST_PATH }}"
+- name: Install cf package
+  apt: deb="{{ CF_PACKAGE_DEST_PATH }}"
+

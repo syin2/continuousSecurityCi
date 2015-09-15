@@ -3,5 +3,6 @@
   sudo: yes
   roles:
   - configure_gocd
+  - cf_cli
   - role: znzj.rbenv
     rbenv_ruby_version: 2.2.2
