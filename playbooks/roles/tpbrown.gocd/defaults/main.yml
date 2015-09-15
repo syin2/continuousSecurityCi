@@ -12,7 +12,7 @@ GOCD_GROUPID: 5000
 GOCD_AUTO_REGISTER_KEY: insecure_registration_key
 
 # Basic SCM dependencies
-GOCD_SCM_GIT: false
+GOCD_SCM_GIT: true
 GOCD_SCM_MERCURIAL: false
 GOCD_SCM_SVN: false
 
