@@ -10,7 +10,12 @@
         <jobs>
           <job name="Deploy">
             <tasks>
-              <rake />
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle install --path vendor/bundle</arg>
+                <runif status="passed" />
+              </exec>
             </tasks>
           </job>
         </jobs>

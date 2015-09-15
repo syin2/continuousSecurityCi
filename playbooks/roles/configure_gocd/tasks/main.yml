@@ -3,3 +3,12 @@
   copy: src=cruise-config.xml dest=/etc/go/cruise-config.xml owner=go group=go mode=0644
   notify:
     - restart go-server
+
+- name: install git
+  apt: name=git state=present
+
+- name: install build-essential
+  apt: name=build-essential state=present
+
+- name: setup go .bashrc
+  copy: src=.bashrc dest=/var/go/.bashrc owner=go group=go mode=0644

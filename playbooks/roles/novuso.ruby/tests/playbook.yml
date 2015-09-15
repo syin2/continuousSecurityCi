@@ -1,7 +1,0 @@
----
-- hosts: all
-  vars:
-  - ruby_gems:
-    - name: "compass"
-  roles:
-  - ansible-role-ruby
