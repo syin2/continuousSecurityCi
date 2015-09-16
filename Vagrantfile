@@ -43,7 +43,9 @@ Vagrant.configure(2) do |config|
       ansible.limit = 'all'
       ansible.playbook = "playbooks/roles/all.yml"
       ansible.extra_vars = {
-        GOCD_ADMIN_EMAIL: 'jim@thoughtworks.com'
+        GOCD_ADMIN_EMAIL: 'jim@thoughtworks.com',
+        CF_EMAIL: get_secret("cf_email"),
+        CF_PASSWORD: get_secret("cf_password")
       }
     end
   end

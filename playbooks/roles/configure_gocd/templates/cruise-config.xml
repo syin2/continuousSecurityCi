@@ -3,6 +3,14 @@
   <server artifactsdir="artifacts" agentAutoRegisterKey="123456789abcdef" commandRepositoryLocation="default" serverId="13b05371-77fd-41a8-a9e4-6381123f5f7b" />
   <pipelines group="pretend">
     <pipeline name="pretend_catalog_service">
+      <environmentvariables>
+        <variable name="CF_EMAIL" secure="true">
+          <value>{{ CF_EMAIL }}</value>
+        </variable>
+        <variable name="CF_PASSWORD" secure="true">
+          <value>{{ CF_PASSWORD }}</value>
+        </variable>
+      </environmentvariables>
       <materials>
         <git url="https://github.com/ThoughtWorks-AELab/pretend_catalog_service" />
       </materials>
