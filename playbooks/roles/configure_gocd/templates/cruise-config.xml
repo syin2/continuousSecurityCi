@@ -112,6 +112,39 @@
         </jobs>
       </stage>
     </pipeline>
+    <pipeline name="pretend_deals_service">
+      <environmentvariables>
+        <variable name="CF_EMAIL" secure="true">
+          <value>{{ CF_EMAIL }}</value>
+        </variable>
+        <variable name="CF_PASSWORD" secure="true">
+          <value>{{ CF_PASSWORD }}</value>
+        </variable>
+      </environmentvariables>
+      <materials>
+        <git url="https://github.com/ThoughtWorks-AELab/pretend_deals_service" />
+      </materials>
+      <stage name="DeployStaging">
+        <jobs>
+          <job name="Deploy">
+            <tasks>
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle install --path vendor/bundle</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle exec rake deploy_dev</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
     <pipeline name="pretend_web_app">
       <environmentvariables>
         <variable name="CF_EMAIL" secure="true">
