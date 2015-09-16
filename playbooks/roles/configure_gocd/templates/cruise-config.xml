@@ -124,6 +124,25 @@
       <materials>
         <git url="https://github.com/ThoughtWorks-AELab/pretend_deals_service" />
       </materials>
+      <stage name="Test">
+        <jobs>
+          <job name="UnitTest">
+            <tasks>
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle install --path vendor/bundle --without production</arg>
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle exec rake spec</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
       <stage name="DeployStaging">
         <jobs>
           <job name="Deploy">
