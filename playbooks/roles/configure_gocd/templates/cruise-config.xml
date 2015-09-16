@@ -131,7 +131,7 @@
               <exec command="/bin/bash">
                 <arg>-l</arg>
                 <arg>-c</arg>
-                <arg>bundle install --path vendor/bundle</arg>
+                <arg>bundle install --path vendor/bundle --without production</arg>
                 <runif status="passed" />
               </exec>
               <exec command="/bin/bash">
@@ -164,7 +164,7 @@
               <exec command="/bin/bash">
                 <arg>-l</arg>
                 <arg>-c</arg>
-                <arg>bundle install --path vendor/bundle</arg>
+                <arg>bundle install --path vendor/bundle --without production</arg>
                 <runif status="passed" />
               </exec>
               <exec command="/bin/bash">
