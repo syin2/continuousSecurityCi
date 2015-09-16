@@ -52,6 +52,31 @@
         </jobs>
       </stage>
     </pipeline>
+    <pipeline name="pretend_web_app">
+      <materials>
+        <git url="https://github.com/ThoughtWorks-AELab/pretend_web_app" />
+      </materials>
+      <stage name="DeployStaging">
+        <jobs>
+          <job name="Deploy">
+            <tasks>
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle install --path vendor/bundle</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-l</arg>
+                <arg>-c</arg>
+                <arg>bundle exec rake deploy_dev</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
   </pipelines>
   <agents>
   </agents>
