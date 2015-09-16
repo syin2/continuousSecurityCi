@@ -7,5 +7,9 @@
 - name: install build-essential
   apt: name=build-essential state=present
 
+- name: install native db libraries
+  apt: name=libpq-dev state=present
+  apt: name=libsqlite3-dev state=present
+
 - name: setup go .bashrc
   copy: src=.bashrc dest=/var/go/.bashrc owner=go group=go mode=0644
