@@ -7,8 +7,10 @@
 - name: install build-essential
   apt: name=build-essential state=present
 
-- name: install native db libraries
+- name: install libpq-dev
   apt: name=libpq-dev state=present
+
+- name: install libsqllite3-dev
   apt: name=libsqlite3-dev state=present
 
 - name: setup go .bashrc
