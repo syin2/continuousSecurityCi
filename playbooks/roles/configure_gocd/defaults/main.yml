@@ -1,0 +1,8 @@
+# Agent auto-registration; this is insecure and you should override this value for real usage
+GOCD_AUTO_REGISTER_KEY: "123456789abcdef"
+
+# Basic SCM dependencies
+GOCD_SCM_GIT: true
+
+# Base server configuration - Optional
+GOCD_CONFIGURE: true
