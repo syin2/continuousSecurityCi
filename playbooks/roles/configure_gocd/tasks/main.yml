@@ -1,8 +1,8 @@
----
-- name: put cruise-config in the correct place
-  template: src=cruise-config.xml dest=/etc/go/cruise-config.xml owner=go group=go mode=0644
-  notify:
-    - restart go-server
+- name: Gimme some pip
+  apt: name=python-pip state=latest
+
+- name: Install/upgrade gomatic for GoCD wrangling
+  pip: name="git+https://github.com/jimarnold/gomatic#egg=gomatic" state=latest
 
 - name: install build-essential
   apt: name=build-essential state=present
@@ -15,3 +15,9 @@
 
 - name: setup go .bashrc
   copy: src=.bashrc dest=/var/go/.bashrc owner=go group=go mode=0644
+
+- name: create our pipelines
+  script: ./configure_gocd.py 
+  environment:
+    CF_EMAIL: CF_EMAIL
+    CF_PASSWORD: CF_PASSWORD
