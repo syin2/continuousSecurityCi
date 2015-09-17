@@ -26,7 +26,7 @@ Vagrant.configure(2) do |config|
     aws.region = "us-east-1"
     aws.instance_type = "t2.medium"
     aws.keypair_name = get_secret("aws_keypair_name")
-    aws.security_groups = ["sg-da566fbd"]
+    aws.security_groups = ["sg-922328f5"]
     aws.subnet_id = get_secret("aws_subnet_id")
     aws.associate_public_ip = true
     aws.ami = "ami-d05e75b8"
