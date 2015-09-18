@@ -26,15 +26,17 @@ pipeline = configurator\
 	.ensure_replacement_of_pipeline("pretend_pricing_service")\
 	.set_git_url("https://github.com/ThoughtWorks-AELab/pretend_pricing_service")
 pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": CF_EMAIL, "CF_PASSWORD": CF_PASSWORD})
-stage = pipeline.ensure_stage("Test")
+stage = pipeline.ensure_stage("UnitTest")
 job = stage.ensure_job("UnitTest")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake db:migrate']))
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec']))
-stage = pipeline.ensure_stage("DeployStaging")
-job = stage.ensure_job("Deploy")
+stage = pipeline.ensure_stage("FunctionalTest")
+job = stage.ensure_job("FunctionalTest")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake deploy_dev']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake deploy[test,pretend-pricing-service-ci]']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'echo testing testing']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake delete_app[test]']))
 
 pipeline = configurator\
 	.ensure_pipeline_group("pretend")\
