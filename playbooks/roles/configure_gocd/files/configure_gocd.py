@@ -55,6 +55,10 @@ pipeline = configurator\
 	.ensure_replacement_of_pipeline("pretend_web_app")\
 	.set_git_url("https://github.com/ThoughtWorks-AELab/pretend_web_app")
 pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": CF_EMAIL, "CF_PASSWORD": CF_PASSWORD})
+stage = pipeline.ensure_stage("Test")
+job = stage.ensure_job("UnitTest")
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec']))
 stage = pipeline.ensure_stage("DeployStaging")
 job = stage.ensure_job("Deploy")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
