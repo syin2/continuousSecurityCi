@@ -30,13 +30,11 @@ stage = pipeline.ensure_stage("UnitTest")
 job = stage.ensure_job("UnitTest")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake db:migrate']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake test:spec']))
 stage = pipeline.ensure_stage("FunctionalTest")
 job = stage.ensure_job("FunctionalTest")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake deploy[test,pretend-pricing-service-ci]']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'echo testing testing']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake delete_app[test]']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake test:functional']))
 
 pipeline = configurator\
 	.ensure_pipeline_group("pretend")\
