@@ -28,13 +28,13 @@ pipeline = configurator\
 pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": CF_EMAIL, "CF_PASSWORD": CF_PASSWORD})
 stage = pipeline.ensure_stage("UnitTest")
 job = stage.ensure_job("UnitTest")
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle']))
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake db:migrate']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake test:spec']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec:unit']))
 stage = pipeline.ensure_stage("FunctionalTest")
 job = stage.ensure_job("FunctionalTest")
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake test:functional']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec:functional']))
 
 pipeline = configurator\
 	.ensure_pipeline_group("pretend")\
