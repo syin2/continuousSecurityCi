@@ -58,7 +58,7 @@ pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": CF_EMAIL, 
 stage = pipeline.ensure_stage("Test")
 job = stage.ensure_job("UnitTest")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
-job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec']))
+job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle exec rake spec:unit']))
 stage = pipeline.ensure_stage("DeployStaging")
 job = stage.ensure_job("Deploy")
 job.add_task(ExecTask(['/bin/bash', '-l', '-c', 'bundle install --path vendor/bundle --without production']))
