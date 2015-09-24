@@ -6,7 +6,8 @@ def _create_pipeline(group, pipeline_name, add_cf_vars=False):
 	pipeline_group = configurator.ensure_pipeline_group(group)
 	pipeline = pipeline_group.ensure_replacement_of_pipeline(pipeline_name)
 	if(add_cf_vars == True):
-		pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": os.environ['CF_EMAIL'], "CF_PASSWORD": os.environ['CF_PASSWORD'], "CF_HOME": "."})
+		pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": os.environ['CF_EMAIL'], "CF_PASSWORD": os.environ['CF_PASSWORD']})
+		pipeline.ensure_environment_variables({"CF_HOME": "."})
 	return pipeline
 
 def _add_exec_task(job, command, working_dir=None, runif="passed"):
@@ -63,7 +64,7 @@ def build_deals_pipeline_group(configurator):
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build')
 	_add_exec_task(job, 'PRICING_SERVICE_URL=http://pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER.cfapps.io APP_NAME=deals_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'deals_build')
 	_add_exec_task(job, 'bundle exec rake app:delete[test,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
-	job.ensure_artifacts(set([BuildArtifact("deals_build/*", "deals_build"), TestArtifact("spec/reports")]))
+	job.ensure_artifacts(set([BuildArtifact("deals_build/*", "deals_build"), BuildArtifact("pricing_build/*", "pricing_build"), TestArtifact("spec/reports")]))
 
 def build_web_app_pipeline_group(configurator):
 	pipeline = _create_pipeline("web_app", "web_app_unit_tests", True)
