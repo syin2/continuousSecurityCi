@@ -26,7 +26,7 @@ def build_catalog_pipeline_group(configurator):
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	job.add_task(FetchArtifactTask('catalog_unit_tests', 'test', 'test', FetchArtifactDir('catalog_build')))
 	_add_exec_task(job, 'APP_NAME=catalog_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'catalog_build')
-	job.ensure_artifacts({TestArtifact("spec/reports")})
+	job.ensure_artifacts(set([BuildArtifact("catalog_build/*", "catalog_build"), TestArtifact("spec/reports")]))
 
 def build_pricing_pipeline_group(configurator):
 	pipeline = _create_pipeline("pricing", "pricing_unit_tests")
@@ -43,7 +43,7 @@ def build_pricing_pipeline_group(configurator):
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	job.add_task(FetchArtifactTask('pricing_unit_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
 	_add_exec_task(job, 'APP_NAME=pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'pricing_build')
-	job.ensure_artifacts({TestArtifact("spec/reports")})
+	job.ensure_artifacts(set([BuildArtifact("pricing_build/*", "pricing_build"), TestArtifact("spec/reports")]))
 
 def build_deals_pipeline_group(configurator):
 	pipeline = _create_pipeline("deals", "deals_unit_tests")
@@ -55,15 +55,15 @@ def build_deals_pipeline_group(configurator):
 	job.ensure_artifacts({BuildArtifact("*", "deals_build")})
 
 	pipeline = _create_pipeline("deals", "deals_functional_tests", True)
-	pipeline.ensure_material(PipelineMaterial('pricing_unit_tests', 'test'))
+	pipeline.ensure_material(PipelineMaterial('pricing_functional_tests', 'test', 'pricing_functional_tests'))
 	pipeline.ensure_material(PipelineMaterial('deals_unit_tests', 'test'))
 	job = pipeline.ensure_stage("test").ensure_job("test")
-	job.add_task(FetchArtifactTask('pricing_unit_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
+	job.add_task(FetchArtifactTask('pricing_functional_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
 	job.add_task(FetchArtifactTask('deals_unit_tests', 'test', 'test', FetchArtifactDir('deals_build')))
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build')
 	_add_exec_task(job, 'PRICING_SERVICE_URL=http://pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER.cfapps.io APP_NAME=deals_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'deals_build')
 	_add_exec_task(job, 'bundle exec rake app:delete[test,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
-	job.ensure_artifacts({TestArtifact("spec/reports")})
+	job.ensure_artifacts(set([BuildArtifact("deals_build/*", "deals_build"), TestArtifact("spec/reports")]))
 
 def build_web_app_pipeline_group(configurator):
 	pipeline = _create_pipeline("web_app", "web_app_unit_tests", True)
@@ -75,14 +75,13 @@ def build_web_app_pipeline_group(configurator):
 	job.ensure_artifacts({BuildArtifact("*", "web_app_build")})
 
 	pipeline = _create_pipeline("web_app", "web_app_functional_tests", True)
-	pipeline.ensure_material(PipelineMaterial('catalog_unit_tests', 'test'))
-	pipeline.ensure_material(PipelineMaterial('pricing_unit_tests', 'test'))
-	pipeline.ensure_material(PipelineMaterial('deals_unit_tests', 'test'))
+	pipeline.ensure_material(PipelineMaterial('catalog_functional_tests', 'test', 'catalog_functional_tests'))
+	pipeline.ensure_material(PipelineMaterial('deals_functional_tests', 'test', 'deals_functional_tests'))
 	pipeline.ensure_material(PipelineMaterial('web_app_unit_tests', 'test'))
 	job = pipeline.ensure_stage("test").ensure_job("test")
-	job.add_task(FetchArtifactTask('catalog_unit_tests', 'test', 'test', FetchArtifactDir('catalog_build')))
-	job.add_task(FetchArtifactTask('pricing_unit_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
-	job.add_task(FetchArtifactTask('deals_unit_tests', 'test', 'test', FetchArtifactDir('deals_build')))
+	job.add_task(FetchArtifactTask('catalog_functional_tests', 'test', 'test', FetchArtifactDir('catalog_build')))
+	job.add_task(FetchArtifactTask('deals_functional_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
+	job.add_task(FetchArtifactTask('deals_functional_tests', 'test', 'test', FetchArtifactDir('deals_build')))
 	job.add_task(FetchArtifactTask('web_app_unit_tests', 'test', 'test', FetchArtifactDir('web_app_build')))
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,catalog_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER,catalog_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build')
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER,pricing_$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build')
