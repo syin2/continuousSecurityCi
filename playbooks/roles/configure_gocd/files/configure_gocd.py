@@ -6,7 +6,7 @@ def _create_pipeline(group, pipeline_name, add_cf_vars=False):
 	pipeline_group = configurator.ensure_pipeline_group(group)
 	pipeline = pipeline_group.ensure_replacement_of_pipeline(pipeline_name)
 	if(add_cf_vars == True):
-		pipeline.ensure_unencrypted_secure_environment_variables({"CF_EMAIL": os.environ['CF_EMAIL'], "CF_PASSWORD": os.environ['CF_PASSWORD']})
+		pipeline.ensure_unencrypted_secure_environment_variables({"CF_USERNAME": os.environ['CF_USERNAME'], "CF_PASSWORD": os.environ['CF_PASSWORD']})
 		pipeline.ensure_environment_variables({"CF_HOME": "."})
 	return pipeline
 

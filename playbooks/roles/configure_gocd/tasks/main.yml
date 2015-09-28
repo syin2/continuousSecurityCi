@@ -19,5 +19,5 @@
 - name: create our pipelines
   script: ./configure_gocd.py 
   environment:
-    CF_EMAIL: CF_EMAIL
+    CF_USERNAME: CF_USERNAME
     CF_PASSWORD: CF_PASSWORD
