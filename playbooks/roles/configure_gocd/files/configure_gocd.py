@@ -26,7 +26,7 @@ def build_catalog_pipeline_group(configurator):
 	pipeline.ensure_material(PipelineMaterial('catalog_unit_tests', 'test'))
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	job.add_task(FetchArtifactTask('catalog_unit_tests', 'test', 'test', FetchArtifactDir('catalog_build')))
-	_add_exec_task(job, 'APP_NAME=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'catalog_build')
+	_add_exec_task(job, 'PREFIX=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'catalog_build')
 	job.ensure_artifacts(set([BuildArtifact("catalog_build/*", "catalog_build"), TestArtifact("spec/reports")]))
 
 def build_pricing_pipeline_group(configurator):
@@ -43,7 +43,7 @@ def build_pricing_pipeline_group(configurator):
 	pipeline.ensure_material(PipelineMaterial('pricing_unit_tests', 'test'))
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	job.add_task(FetchArtifactTask('pricing_unit_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
-	_add_exec_task(job, 'APP_NAME=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'pricing_build')
+	_add_exec_task(job, 'PREFIX=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'pricing_build')
 	job.ensure_artifacts(set([BuildArtifact("pricing_build/*", "pricing_build"), TestArtifact("spec/reports")]))
 
 def build_deals_pipeline_group(configurator):
@@ -62,7 +62,7 @@ def build_deals_pipeline_group(configurator):
 	job.add_task(FetchArtifactTask('pricing_functional_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
 	job.add_task(FetchArtifactTask('deals_unit_tests', 'test', 'test', FetchArtifactDir('deals_build')))
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build')
-	_add_exec_task(job, 'PRICING_SERVICE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_pricing.cfapps.io APP_NAME=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'deals_build')
+	_add_exec_task(job, 'PRICING_SERVICE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_pricing.cfapps.io PREFIX=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'deals_build')
 	_add_exec_task(job, 'bundle exec rake app:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
 	job.ensure_artifacts(set([BuildArtifact("deals_build/*", "deals_build"), BuildArtifact("pricing_build/*", "pricing_build"), TestArtifact("spec/reports")]))
 
@@ -87,7 +87,7 @@ def build_web_app_pipeline_group(configurator):
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build')
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build')
 	_add_exec_task(job, 'bundle exec rake app:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'deals_build')
-	_add_exec_task(job, 'CATALOG_SERVICE_BASE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_catalog.cfapps.io DEALS_SERVICE_BASE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_deals.cfapps.io APP_NAME=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'web_app_build')
+	_add_exec_task(job, 'CATALOG_SERVICE_BASE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_catalog.cfapps.io DEALS_SERVICE_BASE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_deals.cfapps.io PREFIX=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'web_app_build')
 	_add_exec_task(job, 'bundle exec rake app:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'deals_build', "any")
 	_add_exec_task(job, 'bundle exec rake app:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
 	_add_exec_task(job, 'bundle exec rake app:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build', "any")
