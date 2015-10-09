@@ -65,6 +65,7 @@ def build_deals_pipeline_group(configurator):
 	_add_exec_task(job, 'bundle exec rake cf:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build')
 	_add_exec_task(job, 'PRICING_SERVICE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER_pricing.cfapps.io PREFIX=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'deals_build')
 	_add_exec_task(job, 'bundle exec rake cf:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
+	_add_exec_task(job, 'bundle exec rake cf:dups[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
 	job.ensure_artifacts(set([BuildArtifact("deals_build/*", "deals_build"), BuildArtifact("pricing_build/*", "pricing_build"), TestArtifact("spec/reports")]))
 
 def build_web_app_pipeline_group(configurator):
@@ -95,6 +96,9 @@ def build_web_app_pipeline_group(configurator):
 	_add_exec_task(job, 'bundle exec rake cf:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'deals_build', "any")
 	_add_exec_task(job, 'bundle exec rake cf:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
 	_add_exec_task(job, 'bundle exec rake cf:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build', "any")
+	_add_exec_task(job, 'bundle exec rake cf:dups[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'deals_build', "any")
+	_add_exec_task(job, 'bundle exec rake cf:dups[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'pricing_build', "any")
+	_add_exec_task(job, 'bundle exec rake cf:dups[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build', "any")
 	job.ensure_artifacts({TestArtifact("spec/reports")})
 
 configurator = GoCdConfigurator(HostRestClient("localhost:8153"))
