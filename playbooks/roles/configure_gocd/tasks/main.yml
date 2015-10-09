@@ -2,7 +2,7 @@
   apt: name=python-pip state=latest
 
 - name: Install/upgrade gomatic for GoCD wrangling
-  pip: name="git+https://github.com/jimarnold/gomatic#egg=gomatic" state=latest
+  pip: name="gomatic" state=latest
 
 - name: install build-essential
   apt: name=build-essential state=present
