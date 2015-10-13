@@ -6,7 +6,3 @@
 * vagrant plugin install vagrant-aws
 * install ansible "brew install ansible" for mac
 * vagrant up --provider=aws
-* add cloud foundry credentials as environment variables in the gocd pipeline:
-  * CF_EMAIL: <your cloud foundry login>
-  * CF_PASSWORD: <your cloud foundry password>
-
