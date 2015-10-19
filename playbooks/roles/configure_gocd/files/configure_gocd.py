@@ -19,7 +19,7 @@ def build_catalog_pipeline_group(configurator):
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	_add_exec_task(job, 'bundle install --path vendor/bundle --without production')
 	_add_exec_task(job, 'bundle exec rake spec:unit')
-	job.ensure_artifacts({TestArtifact("spec/reports")})
+	job.ensure_artifacts({TestArtifact("build/test-results")})
 	job.ensure_artifacts({BuildArtifact("*", "catalog_build")})
 
 	pipeline = _create_pipeline("catalog", "catalog_functional_tests", True)
