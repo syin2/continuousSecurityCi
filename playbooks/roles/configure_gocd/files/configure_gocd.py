@@ -18,6 +18,7 @@ def build_catalog_pipeline_group(configurator):
 	pipeline.set_git_url("https://github.com/ThoughtWorks-AELab/pretend_catalog_service")
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	_add_exec_task(job, 'bundle install --path vendor/bundle --without production')
+	_add_exec_task(job, 'bundle exec rake assemble')
 	_add_exec_task(job, 'bundle exec rake spec:unit')
 	job.ensure_artifacts({TestArtifact("build/test-results")})
 	job.ensure_artifacts({BuildArtifact("*", "catalog_build")})
@@ -26,7 +27,9 @@ def build_catalog_pipeline_group(configurator):
 	pipeline.ensure_material(PipelineMaterial('catalog_unit_tests', 'test'))
 	job = pipeline.ensure_stage("test").ensure_job("test")
 	job.add_task(FetchArtifactTask('catalog_unit_tests', 'test', 'test', FetchArtifactDir('catalog_build')))
-	_add_exec_task(job, 'PREFIX=$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER bundle exec rake spec:functional', 'catalog_build')
+	_add_exec_task(job, 'bundle exec rake cf:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build')
+	_add_exec_task(job, 'BASE_URL=http://$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER-catalog.cfapps.io bundle exec rake spec:functional', 'catalog_build')
+	_add_exec_task(job, 'bundle exec rake cf:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER]', 'catalog_build', runif='any')
 	job.ensure_artifacts(set([BuildArtifact("catalog_build/*", "catalog_build"), TestArtifact("catalog_build/spec/reports")]))
 
 	pipeline = _create_pipeline("catalog", "catalog_deployment", True)

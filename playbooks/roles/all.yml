@@ -2,7 +2,10 @@
 - hosts: all
   sudo: yes
   roles:
+  - ansible-java8-oracle
   - configure_gocd
   - cf_cli
   - role: znzj.rbenv
     rbenv_ruby_version: 2.2.2
+  - role: MagneDavidsen.gradle
+    gradle_version: "2.7"
