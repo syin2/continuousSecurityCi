@@ -146,6 +146,21 @@ def build_web_app_pipeline_group(configurator):
 	job.add_task(FetchArtifactTask('web_app_functional_tests', 'test', 'test', FetchArtifactDir('web_app_build')))
 	_add_exec_task(job, 'bundle exec rake cf:deploy[production,production]', 'web_app_build')
 
+def build_performance_test_pipeline_group(configurator):
+        pipeline = _create_pipeline("performance_tests", "performance_tests", True)
+	pipeline.ensure_material(PipelineMaterial('web_app_functional_tests', 'test', 'web_app_functional_tests'))
+        job = pipeline.ensure_stage("test").ensure_job("test")
+	job.add_task(FetchArtifactTask('web_app_functional_tests', 'test', 'test', FetchArtifactDir('catalog_build')))
+	job.add_task(FetchArtifactTask('web_app_functional_tests', 'test', 'test', FetchArtifactDir('pricing_build')))
+	job.add_task(FetchArtifactTask('web_app_functional_tests', 'test', 'test', FetchArtifactDir('deals_build')))
+	job.add_task(FetchArtifactTask('web_app_functional_tests', 'test', 'test', FetchArtifactDir('web_app_build')))
+        _add_exec_task(job, 'parallel "cd {}; bundle exec rake cf:cups[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER];" ::: catalog_build pricing_build deals_build web_app_build')
+        _add_exec_task(job, 'parallel "cd {}; bundle exec rake cf:deploy[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER];" ::: catalog_build pricing_build deals_build web_app_build')
+        _add_exec_task(job, 'BASE_URL=http://web-app-$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER.cfapps.io bundle exec rake spec:performance', 'web_app_build')
+        _add_exec_task(job, 'parallel "cd {}; bundle exec rake cf:delete[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER];" ::: catalog_build pricing_build deals_build web_app_build', runif='any')
+        _add_exec_task(job, 'parallel "cd {}; bundle exec rake cf:dups[test,$GO_PIPELINE_NAME$GO_PIPELINE_COUNTER];" ::: catalog_build pricing_build deals_build web_app_build', runif='any')
+	job.ensure_artifacts(set([TestArtifact("web_app_build/spec/reports")]))
+
 def build_pie_pipeline_group(configurator):
 	pipeline = _create_pipeline("PIE", "PIE", True)
 	pipeline.ensure_material(PipelineMaterial('web_app_functional_tests', 'test', 'web_app_functional_tests'))
@@ -174,5 +189,6 @@ build_catalog_pipeline_group(configurator)
 build_pricing_pipeline_group(configurator)
 build_deals_pipeline_group(configurator)
 build_web_app_pipeline_group(configurator)
+build_performance_test_pipeline_group(configurator)
 build_pie_pipeline_group(configurator)
 configurator.save_updated_config()

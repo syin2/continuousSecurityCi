@@ -16,6 +16,9 @@
 - name: install libsqllite3-dev
   apt: name=libsqlite3-dev state=present
 
+- name: ab for perf testing
+  apt: name=apache2-utils
+
 - name: setup go .bashrc
   copy: src=.bashrc dest=/var/go/.bashrc owner=go group=go mode=0644
 
