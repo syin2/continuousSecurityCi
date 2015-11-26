@@ -4,6 +4,7 @@
 * Fill out secrets.yml
 * install vagrant version 1.7.4+
 * install ansible "brew install ansible" for mac
+* ansible-galaxy install -r requirements.yml
 
 ==== To run a local vm ====
 

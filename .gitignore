@@ -1,3 +1,4 @@
 .vagrant
 *.swp
 secrets.yml
+/playbooks/galaxy-roles
