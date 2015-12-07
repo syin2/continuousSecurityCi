@@ -10,6 +10,9 @@
 - name: install libpq-dev
   apt: name=libpq-dev state=present
 
+- name: install libmysqlclient-dev
+  apt: name=libmysqlclient-dev state=present
+
 - name: I need parallel
   apt: name=parallel state=latest
 
