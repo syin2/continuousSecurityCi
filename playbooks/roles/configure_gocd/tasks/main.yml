@@ -22,9 +22,6 @@
 - name: setup go .bashrc
   copy: src=.bashrc dest=/var/go/.bashrc owner=go group=go mode=0644
 
-- name: setup java 8 as default java
-  file: src=/usr/lib/jvm/java-8-oracle dest=/usr/lib/jvm/default-java state=link
-
 - name: create our pipelines
   script: ./configure_gocd.py
   environment:
