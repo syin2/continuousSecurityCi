@@ -1,3 +1,5 @@
 ---
 dependencies:
-  - { role: tpbrown.gocd }
+  - role: tpbrown.gocd/roles/common
+  - role: tpbrown.gocd/roles/agent
+  - role: tpbrown.gocd/roles/server

@@ -2,3 +2,5 @@
   name: MagneDavidsen.gradle
 - src: git+ssh://git@github.com/ANXS/oracle-jdk.git
   name: ANXS.oracle-jdk
+- src: git+ssh://git@github.com/Tpbrown/ansible-gocd.git
+  name: tpbrown.gocd

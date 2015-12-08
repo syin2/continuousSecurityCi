@@ -41,7 +41,7 @@ Vagrant.configure(2) do |config|
     box.vm.provision "ansible" do |ansible|
       ansible.sudo = true
       ansible.limit = 'all'
-      ansible.playbook = "playbooks/roles/all.yml"
+      ansible.playbook = "site.yml"
       ansible.extra_vars = {
         GOCD_ADMIN_EMAIL: 'jim@thoughtworks.com',
         CF_USERNAME: get_secret("cf_username"),
