@@ -1,4 +1,4 @@
-- src: git+ssh://git@github.com/MagneDavidsen/gradle.git
+- src: git+ssh://git@github.com/pturley/gradle.git
   name: MagneDavidsen.gradle
 - src: git+ssh://git@github.com/ANXS/oracle-jdk.git
   name: ANXS.oracle-jdk
