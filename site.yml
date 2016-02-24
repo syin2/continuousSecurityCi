@@ -12,3 +12,4 @@
     oracle_jdk_java_version_default: 8
   - cf_cli
   - configure_gocd
+  - dot_net
