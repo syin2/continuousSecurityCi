@@ -1,0 +1,7 @@
+---
+- name: Fetch talisman binary
+  get_url:
+    #url="https://github.com/wendyi/talisman/releases/download/0.0.1/talisman"
+    url="http://10.0.2.2:8000/talisman"
+    dest=/usr/local/bin/talisman
+    mode=0755

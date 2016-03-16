@@ -2,3 +2,4 @@
 *.swp
 secrets.yml
 /playbooks/galaxy-roles
+*.DS_Store

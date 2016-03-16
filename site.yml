@@ -13,3 +13,5 @@
   - cf_cli
   - configure_gocd
   - dot_net
+  - role: talisman
+    tags: talisman

@@ -47,6 +47,7 @@ Vagrant.configure(2) do |config|
         CF_USERNAME: get_secret("cf_username"),
         CF_PASSWORD: get_secret("cf_password")
       }
+      #ansible.tags = ""
     end
   end
 end
