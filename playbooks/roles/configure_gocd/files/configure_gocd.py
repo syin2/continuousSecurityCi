@@ -28,10 +28,12 @@ def build_csharp_pipeline_group(configurator):
 
 	pipeline = _create_pipeline("csharp", "csharp_unit_test")
 	pipeline.ensure_material(PipelineMaterial('csharp_build', 'build'))
-	job = pipeline.ensure_stage("unit_test").ensure_job("run_tests")
+	stage = pipeline.ensure_stage("unit_test")
+	job = stage.ensure_job("run_tests")
+	job = job.ensure_artifacts({TestArtifact("csharp_build/csharp/RecipeSharing.UnitTests")})
+	job = job.ensure_tab(Tab("XUnit", "RecipeSharing.UnitTests/tests.txt"))
 	job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnx run', 'csharp_build/csharp/RecipeSharing.UnitTests')
-	job.ensure_artifacts({TestArtifact("build/test-results")})
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnx run > tests.txt', 'csharp_build/csharp/RecipeSharing.UnitTests')
 
 def build_java_pipeline_group(configurator):
 	pipeline = _create_pipeline("java", "java_build")
@@ -44,10 +46,12 @@ def build_java_pipeline_group(configurator):
 
 	pipeline = _create_pipeline("java", "java_unit_test")
 	pipeline.ensure_material(PipelineMaterial('java_build', 'build'))
-	job = pipeline.ensure_stage("unit_test").ensure_job("run_tests")
+	stage = pipeline.ensure_stage("unit_test")
+	job = stage.ensure_job("run_tests")
+	job = job.ensure_artifacts({TestArtifact("java_build/java/build/reports")})
+	job = job.ensure_tab(Tab("JUnit", "reports/tests/index.html"))
 	job.add_task(FetchArtifactTask('java_build', 'build', 'compile', FetchArtifactDir('java_build')))
 	_add_exec_task(job, 'gradle --profile test', 'java_build/java')
-	job.ensure_artifacts({TestArtifact("build/test-results")})
 
 def build_ruby_pipeline_group(configurator):
 	pipeline = _create_pipeline("ruby", "ruby_build")
@@ -58,29 +62,48 @@ def build_ruby_pipeline_group(configurator):
 
 	pipeline = _create_pipeline("ruby", "ruby_unit_test")
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
-	job = pipeline.ensure_stage("unit_test").ensure_job("run_tests")
+	stage = pipeline.ensure_stage("unit_test")
+	job = stage.ensure_job("run_tests")
+	job = job.ensure_artifacts({TestArtifact("ruby_build/ruby/reports")})
+	job = job.ensure_tab(Tab("RSpec", "reports/tests/index.html"))
 	job.add_task(FetchArtifactTask('ruby_build', 'build', 'bundle_install', FetchArtifactDir('ruby_build')))
 	_add_exec_task(job, 'bundle exec rake spec:unit', 'ruby_build/ruby')
-	job.ensure_artifacts({TestArtifact("spec/reports")})
+	
 
 def build_security_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp_security", "csharp_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('csharp_build', 'build'))
-	ruby_job = pipeline.ensure_stage("verify_components").ensure_job("check_csharp_dependencies")
-	ruby_job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
-	_add_sudo_exec_task(ruby_job, '/usr/local/bin/dependency-check/bin/dependency-check.sh --project "RecipeSharing" --scan "packages"', 'csharp_build/csharp')
+	csharp_job = pipeline.ensure_stage("verify_components").ensure_job("check_csharp_dependencies")
+	csharp_job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
+	_add_sudo_exec_task(csharp_job, '/usr/local/bin/dependency-check/bin/dependency-check.sh --project "RecipeSharing" --scan "packages" --format ALL', 'csharp_build/csharp')
+	_add_exec_task(csharp_job, 'grep "<li><i>Vulnerabilities Found</i>:&nbsp;0</li>" -c dependency-check-report.html', 'csharp_build/csharp')
+	csharp_job = csharp_job.ensure_artifacts({TestArtifact("csharp_build/csharp/dependency-check-report.html")});
+	csharp_job = csharp_job.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
 
 	pipeline = _create_pipeline("java_security", "java_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('java_build', 'build'))
-	java_job = pipeline.ensure_stage("verify_components").ensure_job("check_java_dependencies")
-	java_job.add_task(FetchArtifactTask('java_build', 'build', 'compile', FetchArtifactDir('java_build')))
-	_add_exec_task(java_job, 'gradle --profile dependencyCheck', 'java_build/java')
+	java_job1 = pipeline.ensure_stage("verify_components").ensure_job("check_java_dependencies")
+	java_job1.add_task(FetchArtifactTask('java_build', 'build', 'compile', FetchArtifactDir('java_build')))
+	_add_exec_task(java_job1, 'gradle --profile dependencyCheck', 'java_build/java')
+	java_job1 = java_job1.ensure_artifacts({TestArtifact("java_build/java/build/reports/dependency-check-report.html")});
+	java_job1 = java_job1.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
+
+	pipeline = _create_pipeline("java_security", "java_committed_secrets")
+	pipeline.ensure_material(PipelineMaterial('java_build', 'build'))
+	java_job2 = pipeline.ensure_stage("find_secrets").ensure_job("find_java_secrets")
+	java_job2.add_task(FetchArtifactTask('java_build', 'build', 'compile', FetchArtifactDir('java_build')))
+	_add_exec_task(java_job2, 'gradle --profile findSecrets', 'java_build/java')
+	java_job2 = java_job2.ensure_artifacts({TestArtifact("java_build/java/talisman.out")});
+	java_job2 = java_job2.ensure_tab(Tab("Secrets", "dtalisman.out"))
+
 
 	pipeline = _create_pipeline("ruby_security", "ruby_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
 	ruby_job = pipeline.ensure_stage("verify_components").ensure_job("check_ruby_dependencies")
 	ruby_job.add_task(FetchArtifactTask('ruby_build', 'build', 'bundle_install', FetchArtifactDir('ruby_build')))
-	_add_exec_task(ruby_job, 'bundle exec rake dependency_check', 'ruby_build/ruby')
+	_add_exec_task(ruby_job, 'bundle exec rake dependency_check > vulnerabilities.txt', 'ruby_build/ruby')
+	ruby_job = ruby_job.ensure_artifacts({TestArtifact("ruby_build/ruby/build/vulnerabilities.txt")});
+	ruby_job = ruby_job.ensure_tab(Tab("Vulnerabilities", "vulnerabilities.txt"))
 
 configurator = GoCdConfigurator(HostRestClient("localhost:8153"))
 configurator.remove_all_pipeline_groups()

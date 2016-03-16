@@ -1,0 +1,3 @@
+DNVM_URL: "https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh"
+DNVM_DEST: "/bin"
+DNX_DEST_PATH: ""
