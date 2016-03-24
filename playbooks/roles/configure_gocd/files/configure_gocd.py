@@ -20,20 +20,20 @@ def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
 	job = pipeline.ensure_stage("build").ensure_job("compile")
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore RecipeSharing', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build RecipeSharing', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore RecipeSharing.UnitTests', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build RecipeSharing.UnitTests', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore src/RecipeSharing', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build src/RecipeSharing', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore test/RecipeSharing.UnitTests', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build test/RecipeSharing.UnitTests', 'csharp')
 	job.ensure_artifacts({BuildArtifact("*", "csharp_build")})
 
 	pipeline = _create_pipeline("csharp", "csharp_unit_test")
 	pipeline.ensure_material(PipelineMaterial('csharp_build', 'build'))
 	stage = pipeline.ensure_stage("unit_test")
 	job = stage.ensure_job("run_tests")
-	job = job.ensure_artifacts({TestArtifact("csharp_build/csharp/RecipeSharing.UnitTests")})
-	job = job.ensure_tab(Tab("XUnit", "RecipeSharing.UnitTests/tests.txt"))
+	job = job.ensure_artifacts({TestArtifact("csharp_build/csharp/test/RecipeSharing.UnitTests")})
+	job = job.ensure_tab(Tab("XUnit", "test/RecipeSharing.UnitTests/tests.txt"))
 	job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnx run > tests.txt', 'csharp_build/csharp/RecipeSharing.UnitTests')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnx run > tests.txt', 'csharp_build/csharp/test/RecipeSharing.UnitTests')
 
 def build_java_pipeline_group(configurator):
 	pipeline = _create_pipeline("java", "java_build")
@@ -93,8 +93,8 @@ def build_security_pipeline_group(configurator):
 	java_job2 = pipeline.ensure_stage("find_secrets").ensure_job("find_java_secrets")
 	java_job2.add_task(FetchArtifactTask('java_build', 'build', 'compile', FetchArtifactDir('java_build')))
 	_add_exec_task(java_job2, 'gradle --profile findSecrets', 'java_build/java')
-	java_job2 = java_job2.ensure_artifacts({TestArtifact("java_build/java/talisman.out")});
-	java_job2 = java_job2.ensure_tab(Tab("Secrets", "dtalisman.out"))
+	java_job2 = java_job2.ensure_artifacts({TestArtifact("java_build/java/build/reports/talisman.txt")});
+	java_job2 = java_job2.ensure_tab(Tab("Secrets", "talisman.txt"))
 
 
 	pipeline = _create_pipeline("ruby_security", "ruby_vulnerable_components")
