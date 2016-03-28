@@ -20,6 +20,7 @@ def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
 	job = pipeline.ensure_stage("build").ensure_job("compile")
+	_add_exec_task(job, 'rm -rf packages', 'csharp')
 	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore src/RecipeSharing', 'csharp')
 	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build src/RecipeSharing', 'csharp')
 	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore test/RecipeSharing.UnitTests', 'csharp')
