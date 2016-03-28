@@ -1,3 +1,4 @@
+---
 - name: install dnvm
   get_url: 
     url="{{ DNVM_URL }}"
@@ -9,25 +10,11 @@
   args:
     executable: /bin/bash
 
-- name: test
-  sudo: no
-  shell: curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_BRANCH=dev sh
-  args:
-    executable: /bin/bash
-
-- name: test2
-  sudo: no
-  shell: source ~/.dnx/dnvm/dnvm.sh
-  args:
-    executable: /bin/bash
-
 - name: install dnx
   apt: name=libunwind8 state=present
   register: aptout
 
-- debug: var=aptout
-
-- name: install more
+- name: install libraries
   apt: name=gettext state=present
   apt: name=libssl-dev state=present
   apt: name=libcurl4-openssl-dev state=present
@@ -43,7 +30,6 @@
     src=http://dl.bintray.com/jeremy-long/owasp/dependency-check-1.3.4-release.zip
     dest=/usr/local/bin
     copy=no
- 
 
 - name: configure go sudoer
   lineinfile:   dest=/etc/sudoers.d/ansible
@@ -51,23 +37,3 @@
                 state=present
                 create=yes
                 validate='visudo -cf %s'
-
- 
-
-
-- name: dnvm upgrade
-  sudo: no   
-  shell: source ~/.dnx/dnvm/dnvm.sh && dnvm upgrade -r coreclr -p
-  environment:
-    PATH: /home/vagrant/.dnx/dnvm:{{ ansible_env.PATH }}
-  args:
-    executable: /bin/bash
-
-- name: dnu restore
-  sudo: no
-  shell: source ~/.dnx/dnvm/dnvm.sh && dnu restore
-  environment:
-    PATH: /home/vagrant/.dnx/dnvm:{{ ansible_env.PATH }}
-  args:
-    executable: /bin/bash
-
