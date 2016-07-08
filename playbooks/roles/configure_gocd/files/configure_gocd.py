@@ -16,15 +16,21 @@ def _add_exec_task(job, command, working_dir=None, runif="passed"):
 def _add_sudo_exec_task(job, command, working_dir=None, runif="passed"):
 	job.add_task(ExecTask(['/bin/bash', '-c', 'sudo ' + command], working_dir=working_dir, runif=runif))
 
+def build_source_pipeline_group(configurator):
+	pipeline = _create_pipeline("source", "checkout")
+	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
+	checkout_job = pipeline.ensure_stage("source").ensure_job("checkout")
+	checkout_job.ensure_artifacts({BuildArtifact("*", "source")})
+
 def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
 	job = pipeline.ensure_stage("build").ensure_job("compile")
 	_add_exec_task(job, 'rm -rf packages', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore src/RecipeSharing', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build src/RecipeSharing', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore test/RecipeSharing.UnitTests', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build test/RecipeSharing.UnitTests', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore src/RecipeSharing', 'source/csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build src/RecipeSharing', 'source/csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore test/RecipeSharing.UnitTests', 'source/csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build test/RecipeSharing.UnitTests', 'source/csharp')
 	job.ensure_artifacts({BuildArtifact("*", "csharp_build")})
 
 	pipeline = _create_pipeline("csharp", "csharp_unit_test")
@@ -37,9 +43,18 @@ def build_csharp_pipeline_group(configurator):
 	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnx run > tests.txt', 'csharp_build/csharp/test/RecipeSharing.UnitTests')
 
 def build_java_pipeline_group(configurator):
+	pipeline = _create_pipeline("java", "java_secrets")
+	pipeline.set_git_url("https://github.com/wendyi/continuousSecurityJava")
+	secrets_job = pipeline.ensure_stage("find_secrets").ensure_job("find_secrets")
+	_add_exec_task(secrets_job, 'gradle --profile findSecrets --debug', 'java')
+	secrets_job = secrets_job.ensure_artifacts({TestArtifact("java/build/reports")});
+	secrets_job = secrets_job.ensure_tab(Tab("Secrets", "talisman.txt"))
+	secrets_job.ensure_artifacts({BuildArtifact("*", "find_secrets")})
+
 	pipeline = _create_pipeline("java", "java_build")
-	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
+	pipeline.ensure_material(PipelineMaterial('java_secrets', 'find_secrets'))
 	job = pipeline.ensure_stage("build").ensure_job("compile")
+	job.add_task(FetchArtifactTask('java_secrets', 'find_secrets', 'find_secrets', FetchArtifactDir('find_secrets/java')))
 	_add_exec_task(job, 'gradle --profile clean', 'java')
 	_add_exec_task(job, 'gradle --profile compileJava', 'java')
 	_add_exec_task(job, 'gradle --profile compileTestJava', 'java')
@@ -58,7 +73,7 @@ def build_ruby_pipeline_group(configurator):
 	pipeline = _create_pipeline("ruby", "ruby_build")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
 	job = pipeline.ensure_stage("build").ensure_job("bundle_install")
-	_add_exec_task(job, 'bundle install --path vendor/bundle', 'ruby')
+	_add_exec_task(job, 'bundle install --path vendor/bundle', 'source/ruby')
 	job.ensure_artifacts({BuildArtifact("*", "ruby_build")})
 
 	pipeline = _create_pipeline("ruby", "ruby_unit_test")
@@ -89,15 +104,6 @@ def build_security_pipeline_group(configurator):
 	java_job1 = java_job1.ensure_artifacts({TestArtifact("java_build/java/build/reports/dependency-check-report.html")});
 	java_job1 = java_job1.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
 
-	pipeline = _create_pipeline("java_security", "java_committed_secrets")
-	pipeline.ensure_material(PipelineMaterial('java_build', 'build'))
-	java_job2 = pipeline.ensure_stage("find_secrets").ensure_job("find_java_secrets")
-	java_job2.add_task(FetchArtifactTask('java_build', 'build', 'compile', FetchArtifactDir('java_build')))
-	_add_exec_task(java_job2, 'gradle --profile findSecrets', 'java_build/java')
-	java_job2 = java_job2.ensure_artifacts({TestArtifact("java_build/java/build/reports/talisman.txt")});
-	java_job2 = java_job2.ensure_tab(Tab("Secrets", "talisman.txt"))
-
-
 	pipeline = _create_pipeline("ruby_security", "ruby_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
 	ruby_job = pipeline.ensure_stage("verify_components").ensure_job("check_ruby_dependencies")
@@ -108,6 +114,7 @@ def build_security_pipeline_group(configurator):
 
 configurator = GoCdConfigurator(HostRestClient("localhost:8153"))
 configurator.remove_all_pipeline_groups()
+build_source_pipeline_group(configurator)
 build_csharp_pipeline_group(configurator)
 build_java_pipeline_group(configurator)
 build_ruby_pipeline_group(configurator)
