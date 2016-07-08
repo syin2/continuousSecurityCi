@@ -45,29 +45,31 @@ def build_csharp_pipeline_group(configurator):
 def build_java_pipeline_group(configurator):
 	pipeline = _create_pipeline("java", "java_secrets")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurityJava")
-	secrets_job = pipeline.ensure_stage("java_secrets_stage").ensure_job("find_secrets_job")
+	secrets_job = pipeline.ensure_stage("java_secrets_stage") \
+		.ensure_job("find_secrets_job") \
+		.ensure_artifacts({BuildArtifact("*", "find_secrets_job")}) \
+		.ensure_artifacts({TestArtifact("java/build/reports")}) \
+		.ensure_tab(Tab("Secrets", "talisman.txt")) 
 	_add_exec_task(secrets_job, 'gradle --profile findSecrets --debug', 'java')
-	secrets_job = secrets_job.ensure_artifacts({TestArtifact("java/build/reports")});
-	secrets_job = secrets_job.ensure_tab(Tab("Secrets", "talisman.txt"))
-	secrets_job.ensure_artifacts({BuildArtifact("*", "find_secrets_job")})
 
 	pipeline = _create_pipeline("java", "java_build")
 	pipeline.ensure_material(PipelineMaterial('java_secrets', 'java_secrets_stage'))
-	job = pipeline.ensure_stage("java_build_stage").ensure_job("java_compile_job")
-	job.add_task(FetchArtifactTask('java_secrets', 'java_secrets_stage', 'find_secrets_job', FetchArtifactDir('find_secrets_job/java')))
-	_add_exec_task(job, 'gradle --profile clean', 'java')
-	_add_exec_task(job, 'gradle --profile compileJava', 'java')
-	_add_exec_task(job, 'gradle --profile compileTestJava', 'java')
-	job.ensure_artifacts({BuildArtifact("*", "java_compile_job")})
+	compile_job = pipeline.ensure_stage("java_build_stage") \
+		.ensure_job("java_compile_job") \
+		.ensure_artifacts({BuildArtifact("*", "java_compile_job")})
+	compile_job.add_task(FetchArtifactTask('java_secrets', 'java_secrets_stage', 'find_secrets_job', FetchArtifactDir('find_secrets_job/java')))
+	_add_exec_task(compile_job, 'gradle --profile clean', 'java')
+	_add_exec_task(compile_job, 'gradle --profile compileJava', 'java')
+	_add_exec_task(compile_job, 'gradle --profile compileTestJava', 'java')
 
 	pipeline = _create_pipeline("java", "java_unit_test")
 	pipeline.ensure_material(PipelineMaterial('java_build', 'java_build_stage'))
-	stage = pipeline.ensure_stage("unit_test")
-	job = stage.ensure_job("run_tests")
-	job = job.ensure_artifacts({TestArtifact("java_build/java/build/reports")})
-	job = job.ensure_tab(Tab("JUnit", "reports/tests/index.html"))
-	job.add_task(FetchArtifactTask('java_build', 'java_build_stage', 'java_compile_job', FetchArtifactDir('java_compile_job/java')))
-	_add_exec_task(job, 'gradle --profile test', 'java')
+	unit_test_job = pipeline.ensure_stage("unit_test") \
+		.ensure_job("run_tests") \
+		.ensure_artifacts({TestArtifact("java_build/java/build/reports")}) \
+		.ensure_tab(Tab("JUnit", "reports/tests/index.html"))
+	unit_test_job.add_task(FetchArtifactTask('java_build', 'java_build_stage', 'java_compile_job', FetchArtifactDir('java_compile_job/java')))
+	_add_exec_task(unit_test_job, 'gradle --profile test', 'java')
 
 def build_ruby_pipeline_group(configurator):
 	pipeline = _create_pipeline("ruby", "ruby_build")
