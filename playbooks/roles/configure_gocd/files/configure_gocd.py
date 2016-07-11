@@ -71,6 +71,15 @@ def build_java_pipeline_group(configurator):
 	unit_test_job.add_task(FetchArtifactTask('java_build', 'java_build_stage', 'java_compile_job', FetchArtifactDir('java_compile_job/java')))
 	_add_exec_task(unit_test_job, 'gradle --profile test', 'java')
 
+	pipeline = _create_pipeline("java", "java_vulnerable_components")
+	pipeline.ensure_material(PipelineMaterial('java_build', 'java_build_stage'))
+	vulnerable_components_job = pipeline.ensure_stage("verify_components") \
+		.ensure_job("check_java_dependencies") \
+		.ensure_artifacts({TestArtifact("java/build/reports/dependency-check-report.html")}) \
+		.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
+	vulnerable_components_job.add_task(FetchArtifactTask('java_build', 'java_build_stage', 'java_compile_job', FetchArtifactDir('java_compile_job/java')))
+	_add_exec_task(vulnerable_components_job, 'gradle --profile dependencyCheck', 'java')
+
 def build_ruby_pipeline_group(configurator):
 	pipeline = _create_pipeline("ruby", "ruby_build")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
@@ -97,14 +106,6 @@ def build_security_pipeline_group(configurator):
 	_add_exec_task(csharp_job, 'grep "<li><i>Vulnerabilities Found</i>:&nbsp;0</li>" -c dependency-check-report.html', 'csharp_build/csharp')
 	csharp_job = csharp_job.ensure_artifacts({TestArtifact("csharp_build/csharp/dependency-check-report.html")});
 	csharp_job = csharp_job.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
-
-	pipeline = _create_pipeline("java_security", "java_vulnerable_components")
-	pipeline.ensure_material(PipelineMaterial('java_build', 'java_build_stage'))
-	java_job1 = pipeline.ensure_stage("verify_components").ensure_job("check_java_dependencies")
-	java_job1.add_task(FetchArtifactTask('java_build', 'java_build_stage', 'java_compile_job', FetchArtifactDir('java_build')))
-	_add_exec_task(java_job1, 'gradle --profile dependencyCheck', 'java_build/java')
-	java_job1 = java_job1.ensure_artifacts({TestArtifact("java_build/java/build/reports/dependency-check-report.html")});
-	java_job1 = java_job1.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
 
 	pipeline = _create_pipeline("ruby_security", "ruby_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
