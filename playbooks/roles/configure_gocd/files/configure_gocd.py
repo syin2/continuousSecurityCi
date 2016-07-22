@@ -16,12 +16,6 @@ def _add_exec_task(job, command, working_dir=None, runif="passed"):
 def _add_sudo_exec_task(job, command, working_dir=None, runif="passed"):
 	job.add_task(ExecTask(['/bin/bash', '-c', 'sudo ' + command], working_dir=working_dir, runif=runif))
 
-def build_source_pipeline_group(configurator):
-	pipeline = _create_pipeline("source", "checkout")
-	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
-	checkout_job = pipeline.ensure_stage("source").ensure_job("checkout")
-	checkout_job.ensure_artifacts({BuildArtifact("*", "source")})
-
 def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
 	pipeline.set_git_url("https://github.com/wendyi/continuousSecurityCsharp")
@@ -119,7 +113,6 @@ def build_security_pipeline_group(configurator):
 
 configurator = GoCdConfigurator(HostRestClient("localhost:8153"))
 configurator.remove_all_pipeline_groups()
-build_source_pipeline_group(configurator)
 build_csharp_pipeline_group(configurator)
 build_java_pipeline_group(configurator)
 build_ruby_pipeline_group(configurator)
