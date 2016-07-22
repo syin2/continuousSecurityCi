@@ -24,13 +24,13 @@ def build_source_pipeline_group(configurator):
 
 def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
-	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
+	pipeline.set_git_url("https://github.com/wendyi/continuousSecurityCsharp")
 	job = pipeline.ensure_stage("build").ensure_job("compile")
 	_add_exec_task(job, 'rm -rf packages', 'csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore src/RecipeSharing', 'source/csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build src/RecipeSharing', 'source/csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore test/RecipeSharing.UnitTests', 'source/csharp')
-	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build test/RecipeSharing.UnitTests', 'source/csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore src/RecipeSharing', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build src/RecipeSharing', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu restore test/RecipeSharing.UnitTests', 'csharp')
+	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnu build test/RecipeSharing.UnitTests', 'csharp')
 	job.ensure_artifacts({BuildArtifact("*", "csharp_build")})
 
 	pipeline = _create_pipeline("csharp", "csharp_unit_test")
@@ -41,6 +41,16 @@ def build_csharp_pipeline_group(configurator):
 	job = job.ensure_tab(Tab("XUnit", "test/RecipeSharing.UnitTests/tests.txt"))
 	job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
 	_add_exec_task(job, '/home/vagrant/.dnx/runtimes/dnx-coreclr-linux-x64.1.0.0-rc1-update1/bin/dnx run > tests.txt', 'csharp_build/csharp/test/RecipeSharing.UnitTests')
+
+	pipeline = _create_pipeline("csharp", "csharp_vulnerable_components")
+	pipeline.ensure_material(PipelineMaterial('csharp_build', 'build'))
+	csharp_job = pipeline.ensure_stage("verify_components").ensure_job("check_csharp_dependencies")
+	csharp_job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
+	_add_sudo_exec_task(csharp_job, '/usr/local/bin/dependency-check/bin/dependency-check.sh --project "RecipeSharing" --scan "packages" --format ALL', 'csharp_build/csharp')
+	_add_exec_task(csharp_job, 'grep "<li><i>Vulnerabilities Found</i>:&nbsp;0</li>" -c dependency-check-report.html', 'csharp_build/csharp')
+	csharp_job = csharp_job.ensure_artifacts({TestArtifact("csharp_build/csharp/dependency-check-report.html")});
+	csharp_job = csharp_job.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
+
 
 def build_java_pipeline_group(configurator):
 	pipeline = _create_pipeline("java", "java_secrets")
@@ -82,9 +92,9 @@ def build_java_pipeline_group(configurator):
 
 def build_ruby_pipeline_group(configurator):
 	pipeline = _create_pipeline("ruby", "ruby_build")
-	pipeline.set_git_url("https://github.com/wendyi/continuousSecurity")
+	pipeline.set_git_url("https://github.com/wendyi/continuousSecurityRuby")
 	job = pipeline.ensure_stage("build").ensure_job("bundle_install")
-	_add_exec_task(job, 'bundle install --path vendor/bundle', 'source/ruby')
+	_add_exec_task(job, 'bundle install --path vendor/bundle', 'ruby')
 	job.ensure_artifacts({BuildArtifact("*", "ruby_build")})
 
 	pipeline = _create_pipeline("ruby", "ruby_unit_test")
@@ -98,14 +108,6 @@ def build_ruby_pipeline_group(configurator):
 	
 
 def build_security_pipeline_group(configurator):
-	pipeline = _create_pipeline("csharp_security", "csharp_vulnerable_components")
-	pipeline.ensure_material(PipelineMaterial('csharp_build', 'build'))
-	csharp_job = pipeline.ensure_stage("verify_components").ensure_job("check_csharp_dependencies")
-	csharp_job.add_task(FetchArtifactTask('csharp_build', 'build', 'compile', FetchArtifactDir('csharp_build')))
-	_add_sudo_exec_task(csharp_job, '/usr/local/bin/dependency-check/bin/dependency-check.sh --project "RecipeSharing" --scan "packages" --format ALL', 'csharp_build/csharp')
-	_add_exec_task(csharp_job, 'grep "<li><i>Vulnerabilities Found</i>:&nbsp;0</li>" -c dependency-check-report.html', 'csharp_build/csharp')
-	csharp_job = csharp_job.ensure_artifacts({TestArtifact("csharp_build/csharp/dependency-check-report.html")});
-	csharp_job = csharp_job.ensure_tab(Tab("Vulnerabilities", "dependency-check-report.html"))
 
 	pipeline = _create_pipeline("ruby_security", "ruby_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
