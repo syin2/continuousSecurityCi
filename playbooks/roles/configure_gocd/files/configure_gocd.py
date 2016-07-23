@@ -13,8 +13,11 @@ def _create_pipeline(group, pipeline_name, add_cf_vars=False):
 def _add_exec_task(job, command, working_dir=None, runif="passed"):
 	job.add_task(ExecTask(['/bin/bash', '-l', '-c', command], working_dir=working_dir, runif=runif))
 
-def _add_sudo_exec_task(job, command, working_dir=None, runif="passed"):
-	job.add_task(ExecTask(['/bin/bash', '-c', 'sudo ' + command], working_dir=working_dir, runif=runif))
+def _add_exec_task_with_output(job, command, out_file, working_dir=None, runif="passed"):
+	job.add_task(ExecTask(['/bin/bash', '-l', '-c', command, '| tee', out_file], working_dir=working_dir, runif=runif))
+
+# def _add_sudo_exec_task(job, command, working_dir=None, runif="passed"):
+# 	job.add_task(ExecTask(['/bin/bash', '-c', 'sudo ' + command], working_dir=working_dir, runif=runif))
 
 def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
@@ -100,14 +103,11 @@ def build_ruby_pipeline_group(configurator):
 	job.add_task(FetchArtifactTask('ruby_build', 'build', 'bundle_install', FetchArtifactDir('ruby_build')))
 	_add_exec_task(job, 'bundle exec rake spec:unit', 'ruby_build/ruby')
 	
-
-def build_security_pipeline_group(configurator):
-
-	pipeline = _create_pipeline("ruby_security", "ruby_vulnerable_components")
+	pipeline = _create_pipeline("ruby", "ruby_vulnerable_components")
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
 	ruby_job = pipeline.ensure_stage("verify_components").ensure_job("check_ruby_dependencies")
 	ruby_job.add_task(FetchArtifactTask('ruby_build', 'build', 'bundle_install', FetchArtifactDir('ruby_build')))
-	_add_exec_task(ruby_job, 'bundle exec rake dependency_check > vulnerabilities.txt', 'ruby_build/ruby')
+	_add_exec_task(ruby_job, 'bundle exec rake dependency_check', 'vulnerabilities.txt', 'ruby_build/ruby')
 	ruby_job = ruby_job.ensure_artifacts({TestArtifact("ruby_build/ruby/build/vulnerabilities.txt")});
 	ruby_job = ruby_job.ensure_tab(Tab("Vulnerabilities", "vulnerabilities.txt"))
 
@@ -116,5 +116,4 @@ configurator.remove_all_pipeline_groups()
 build_csharp_pipeline_group(configurator)
 build_java_pipeline_group(configurator)
 build_ruby_pipeline_group(configurator)
-build_security_pipeline_group(configurator)
 configurator.save_updated_config()
