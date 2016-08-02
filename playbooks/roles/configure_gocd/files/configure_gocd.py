@@ -13,11 +13,8 @@ def _create_pipeline(group, pipeline_name, add_cf_vars=False):
 def _add_exec_task(job, command, working_dir=None, runif="passed"):
 	job.add_task(ExecTask(['/bin/bash', '-l', '-c', command], working_dir=working_dir, runif=runif))
 
-def _add_exec_task_with_output(job, command, out_file, working_dir=None, runif="passed"):
-	job.add_task(ExecTask(['/bin/bash', '-l', '-c', command, '| tee', out_file], working_dir=working_dir, runif=runif))
-
-# def _add_sudo_exec_task(job, command, working_dir=None, runif="passed"):
-# 	job.add_task(ExecTask(['/bin/bash', '-c', 'sudo ' + command], working_dir=working_dir, runif=runif))
+def _add_sudo_exec_task(job, command, working_dir=None, runif="passed"):
+	job.add_task(ExecTask(['/bin/bash', '-c', 'sudo ' + command], working_dir=working_dir, runif=runif))
 
 def build_csharp_pipeline_group(configurator):
 	pipeline = _create_pipeline("csharp", "csharp_build")
@@ -56,7 +53,7 @@ def build_java_pipeline_group(configurator):
 		.ensure_job("find_secrets_job") \
 		.ensure_artifacts({BuildArtifact("*", "find_secrets_job")}) \
 		.ensure_artifacts({TestArtifact("java/build/reports")}) \
-		.ensure_tab(Tab("Secrets", "talisman.txt")) 
+		.ensure_tab(Tab("Secrets", "reports/talisman.txt")) 
 	_add_exec_task(secrets_job, 'gradle --profile findSecrets --debug', 'java')
 
 	pipeline = _create_pipeline("java", "java_build")
@@ -115,5 +112,5 @@ configurator = GoCdConfigurator(HostRestClient("localhost:8153"))
 configurator.remove_all_pipeline_groups()
 build_csharp_pipeline_group(configurator)
 build_java_pipeline_group(configurator)
-build_ruby_pipeline_group(configurator)
+#build_ruby_pipeline_group(configurator)
 configurator.save_updated_config()
