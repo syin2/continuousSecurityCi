@@ -104,7 +104,8 @@ def build_ruby_pipeline_group(configurator):
 	pipeline.ensure_material(PipelineMaterial('ruby_build', 'build'))
 	ruby_job = pipeline.ensure_stage("verify_components").ensure_job("check_ruby_dependencies")
 	ruby_job.add_task(FetchArtifactTask('ruby_build', 'build', 'bundle_install', FetchArtifactDir('ruby_build')))
-	_add_exec_task(ruby_job, 'bundle exec rake dependency_check', 'vulnerabilities.txt', 'ruby_build/ruby')
+#	_add_exec_task(ruby_job, 'bundle exec rake dependency_check', 'vulnerabilities.txt', 'ruby_build/ruby')
+	_add_exec_task(ruby_job, 'bundle exec rake dependency_check', 'ruby_build/ruby')
 	ruby_job = ruby_job.ensure_artifacts({TestArtifact("ruby_build/ruby/build/vulnerabilities.txt")});
 	ruby_job = ruby_job.ensure_tab(Tab("Vulnerabilities", "vulnerabilities.txt"))
 
@@ -112,5 +113,5 @@ configurator = GoCdConfigurator(HostRestClient("localhost:8153"))
 configurator.remove_all_pipeline_groups()
 build_csharp_pipeline_group(configurator)
 build_java_pipeline_group(configurator)
-#build_ruby_pipeline_group(configurator)
+build_ruby_pipeline_group(configurator)
 configurator.save_updated_config()
