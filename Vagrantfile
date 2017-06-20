@@ -11,7 +11,7 @@ end
 BOX_NAME = ENV["BOX_NAME"] || "default"
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "hashicorp/precise32"
   config.vm.network "forwarded_port", guest: 8153, host: 8153
   config.vm.network "forwarded_port", guest: 8154, host: 8154
 
